@@ -4,6 +4,8 @@ ENV BACKUP_SCHEDULE='5 2 * * *' \
     BACKUP_NAME='Default' \
     BACKUP_LOCATION='' \
     BACKUP_ENCRYPTION_KEY='' \
+    BACKUP_PRUNE='' \
+    BACKUP_NOW='' \
     B2_ID='' \
     B2_KEY='' \
     RCLONE_VERSION=v1.40 \
@@ -21,5 +23,5 @@ WORKDIR /app
 ADD *.sh ./
 RUN chmod +x *.sh
 
-VOLUME ["/data"]
+VOLUME ["/data", "/backups"]
 ENTRYPOINT ["/app/entrypoint.sh"]
