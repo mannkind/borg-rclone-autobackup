@@ -1,4 +1,7 @@
-FROM alpine:3.7
+FROM yen3/binfmt-register:0.1 as builder
+
+FROM __BASEIMAGE_ARCH__/alpine:3.8
+__CROSS_COPY --from=builder /qemu/qemu-__QEMU_ARCH__-static /usr/bin/
 
 ENV BACKUP_SCHEDULE='5 2 * * *' \
     BACKUP_NAME='Default' \
@@ -9,7 +12,7 @@ ENV BACKUP_SCHEDULE='5 2 * * *' \
     B2_ID='' \
     B2_KEY='' \
     RCLONE_VERSION=v1.40 \
-    ARCH=amd64
+    ARCH=__RCLONE_ARCH__
 
 RUN apk --no-cache add ca-certificates bash wget borgbackup && \
     wget http://downloads.rclone.org/${RCLONE_VERSION}/rclone-${RCLONE_VERSION}-linux-${ARCH}.zip && \
