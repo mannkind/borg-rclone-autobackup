@@ -30,16 +30,16 @@ services:
         image: mannkind/borg-rclone-autobackup
         restart: unless-stopped
         volumes:
-            - '/home/mannkind:/data:ro'
+            - "/home/mannkind:/data:ro"
         environment:
-            - BACKUP_NAME=frodo
-            - BACKUP_LOCATION='b2:AllMyBorgBackups/frodo'
-            - BACKUP_SCHEDULE='0 2 * * *'
-            - BACKUP_ENCRYPTION_KEY='One ring to rule them all one ring to find them one ring to bring them all and in the darkness bind them'
-            - BACKUP_PRUNE='--keep-daily=7 --keep-weekly=4'
-            - BACKUP_NOW='true'
-            - B2_ID='kiacup6326is'
-            - B2_KEY='12xd5t3891tqh1qqw1qq3kmhl9hbd9lfugz2j32d'
+            BACKUP_NAME: "frodo"
+            BACKUP_LOCATION: "b2:AllMyBorgBackups/frodo"
+            BACKUP_SCHEDULE: "0 2 * * *"
+            BACKUP_ENCRYPTION_KEY: "One ring to rule them all one ring to find them one ring to bring them all and in the darkness bind them"
+            BACKUP_PRUNE: "--keep-daily=7 --keep-weekly=4"
+            BACKUP_NOW: "true"
+            B2_ID: "kiacup6326is"
+            B2_KEY:"12xd5t3891tqh1qqw1qq3kmhl9hbd9lfugz2j32d"
 ```
 
 ## Volumes
