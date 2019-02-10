@@ -64,3 +64,9 @@ The following environment variables setup B2 as the RClone target
 
   * `B2_ID`: The backblaze id
   * `B2_KEY`: The backblaze key
+
+The following environment variables set up Google Cloud Storage as the RClone target:
+
+  * `GCS_PROJECT_NUMBER`: The project number for your Google Cloud project.
+
+Mount a Google Cloud service account private key, in json format, to `/google-service-account.json` and for the backup location, use format `gcs:<bucketname>/<path>`.
