@@ -1,0 +1,32 @@
+name: Main Workflow
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+jobs:
+  all:
+    name: Build, Test, Deploy, Tag
+    runs-on: ubuntu-18.04
+
+    steps:
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v1
+
+      - name: Build and push the docker images
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          DOCKER_CLI_EXPERIMENTAL: "enabled"
+        run: |
+          echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+          sudo docker run --privileged linuxkit/binfmt:v0.6
+          make docker docker-push
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+
+      - name: Tag and push the git release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          make git-push
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
