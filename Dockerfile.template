@@ -1,0 +1,27 @@
+FROM __BASEIMAGE_ARCH__/alpine:3.10
+
+ENV BACKUP_SCHEDULE='5 2 * * *' \
+    BACKUP_NAME='Default' \
+    BACKUP_LOCATION='' \
+    BACKUP_ENCRYPTION_KEY='' \
+    BACKUP_PRUNE='' \
+    BACKUP_NOW='' \
+    B2_ID='' \
+    B2_KEY='' \
+    GCS_PROJECT_NUMBER='' \
+    RCLONE_VERSION=v1.50.2
+
+RUN apk --update --no-cache add ca-certificates bash wget borgbackup && \
+    wget https://downloads.rclone.org/${RCLONE_VERSION}/rclone-${RCLONE_VERSION}-linux-__RCLONE_ARCH__.zip && \
+    unzip rclone-${RCLONE_VERSION}-linux-__RCLONE_ARCH__.zip && \
+    mv rclone-*-linux-__RCLONE_ARCH__/rclone /usr/bin && \
+    rm -r rclone* && \
+    apk del wget && \
+    mkdir -p p /app
+
+WORKDIR /app
+ADD *.sh ./
+RUN chmod +x *.sh
+
+VOLUME ["/data", "/backups"]
+ENTRYPOINT ["/app/entrypoint.sh"]

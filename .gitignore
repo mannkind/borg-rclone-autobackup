@@ -1,3 +1,6 @@
 Dockerfile.amd64
 Dockerfile.arm32v6
 Dockerfile.arm64v8
+Dockerfile.amd64-e
+Dockerfile.arm32v6-e
+Dockerfile.arm64v8-e
