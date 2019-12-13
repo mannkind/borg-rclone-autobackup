@@ -1,30 +1,63 @@
 #!/bin/bash
-echo "Starting Backup"
+
+whisper() {
+    msg=$1
+    if [[ "$BACKUP_VERBOSE" = "true" ]]; then
+        echo $msg
+    fi
+}
+
+whisper "Starting Backup"
 export BORG_PASSPHRASE="$BACKUP_ENCRYPTION_KEY"
 
-echo "  Starting Variable Setup"
+whisper "  Starting Variable Setup"
 export BORG_REPO="/backups/$BACKUP_NAME"
-echo "  Ending Variable Setup"
+whisper "  Ending Variable Setup"
 
-echo "  Starting Borg Backup"
+whisper "  Starting Borg Backup"
 if [[ ! -d "$BORG_REPO" ]]; then
-    echo "    Initializing Repoistory"
+    whisper "    Starting Repository Initialization"
     mkdir -p "$BORG_REPO"
     borg init --encryption=repokey
+
+    if [[ $? -ne 0 ]]; then
+        echo "FATAL - There was a problem initializing the repository"
+        exit 1
+    fi
+
+    whisper "    Ending Repository Initialization"
 fi
 
-echo "    Creating Daily Archive"
+whisper "    Starting Daily Archive"
 borg create ::$(date +%Y-%m-%d-%s) /data
+if [[ $? -ne 0 ]]; then
+    echo "FATAL - There was a problem creating the daily archive"
+    exit 1
+fi
 
 if [[ $BACKUP_PRUNE ]]; then
-    echo "    Pruning Daily Archive"
+    whisper "    Starting Prune"
+    
     borg prune $BACKUP_PRUNE
+    if [[ $? -ne 0 ]]; then
+        echo "WARNING - There was a problem pruning the daily archive"
+        exit 1
+    fi
+
+    whisper "    Ending Prune"
 fi
 
-echo "  Ending Borg Backup"
+whisper "    Ending Daily Archive"
 
-echo "  Starting Rclone"
+whisper "  Ending Borg Backup"
+
+whisper "  Starting Rclone"
 rclone sync --transfers 16 "$BORG_REPO" "$BACKUP_LOCATION"
-echo "  Ending Rclone"
+if [[ $? -ne 0 ]]; then
+    echo "FATAL - There was a problem syncing the backup"
+    exit 1
+fi
 
-echo "Ending Backup"
+whisper "  Ending Rclone"
+
+whisper "Ending Backup"
