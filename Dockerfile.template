@@ -1,4 +1,4 @@
-FROM __BASEIMAGE_ARCH__/alpine:3.10
+FROM __BASEIMAGE_ARCH__/alpine:3.14
 
 ENV BACKUP_SCHEDULE='5 2 * * *' \
     BACKUP_NAME='Default' \
@@ -10,7 +10,7 @@ ENV BACKUP_SCHEDULE='5 2 * * *' \
     B2_ID='' \
     B2_KEY='' \
     GCS_PROJECT_NUMBER='' \
-    DOWNLOAD_RCLONE_VERSION=v1.50.2
+    DOWNLOAD_RCLONE_VERSION=v1.57.0
 
 RUN apk --update --no-cache add ca-certificates bash wget borgbackup && \
     wget https://downloads.rclone.org/${DOWNLOAD_RCLONE_VERSION}/rclone-${DOWNLOAD_RCLONE_VERSION}-linux-__RCLONE_ARCH__.zip && \
