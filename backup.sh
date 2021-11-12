@@ -8,9 +8,10 @@ whisper() {
 }
 
 whisper "Starting Backup"
-export BORG_PASSPHRASE="$BACKUP_ENCRYPTION_KEY"
 
 whisper "  Starting Variable Setup"
+export BORG_PASSPHRASE="$BACKUP_ENCRYPTION_KEY"
+export BORG_HOST_ID=$BACKUP_NAME
 export BORG_REPO="/backups/$BACKUP_NAME"
 whisper "  Ending Variable Setup"
 
@@ -26,6 +27,11 @@ if [[ ! -d "$BORG_REPO" ]]; then
     fi
 
     whisper "    Ending Repository Initialization"
+fi
+
+if [[ $(pidof borg) = "" ]]; then
+    whisper "    Clearing Locks; Borg Not Running"
+    borg break-lock
 fi
 
 whisper "    Starting Daily Archive"
