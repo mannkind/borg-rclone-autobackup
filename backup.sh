@@ -35,7 +35,17 @@ if [[ $(pidof borg) = "" ]]; then
 fi
 
 whisper "    Starting Daily Archive"
-borg create ::$(date +%Y-%m-%d-%s) /data
+if [[ -z $BACKUP_EXCLUDES ]]; then
+    borg create ::$(date +%Y-%m-%d-%s) /data
+else
+    for exclude in $BACKUP_EXCLUDES
+    do
+        arg_list+="--exclude $exclude "
+    done
+    whisper "    Excluding $BACKUP_EXCLUDES from archive"
+    borg $arg_list create ::$(date +%Y-%m-%d-%s) /data
+fi
+
 if [[ $? -ne 0 ]]; then
     echo "FATAL - There was a problem creating the daily archive"
     exit 1
