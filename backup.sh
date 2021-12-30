@@ -35,15 +35,11 @@ if [[ $(pidof borg) = "" ]]; then
 fi
 
 whisper "    Starting Daily Archive"
-if [[ -z $BACKUP_EXCLUDES ]]; then
+if [[ -z $BORG_CUSTOM_ARGS ]]; then
     borg create ::$(date +%Y-%m-%d-%s) /data
 else
-    for exclude in $BACKUP_EXCLUDES
-    do
-        arg_list+="--exclude $exclude "
-    done
-    whisper "    Excluding $BACKUP_EXCLUDES from archive"
-    borg $arg_list create ::$(date +%Y-%m-%d-%s) /data
+    whisper "    Adding custom args: $BORG_CUSTOM_ARGS"
+    borg create $BORG_CUSTOM_ARGS ::$(date +%Y-%m-%d-%s) /data
 fi
 
 if [[ $? -ne 0 ]]; then
