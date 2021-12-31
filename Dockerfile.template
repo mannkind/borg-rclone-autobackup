@@ -12,7 +12,7 @@ ENV BACKUP_SCHEDULE='5 2 * * *' \
     GCS_PROJECT_NUMBER='' \
     DOWNLOAD_RCLONE_VERSION=v1.57.0
 
-RUN apk --update --no-cache add ca-certificates bash wget borgbackup && \
+RUN apk --update --no-cache add ca-certificates bash wget borgbackup python3 && \
     wget https://downloads.rclone.org/${DOWNLOAD_RCLONE_VERSION}/rclone-${DOWNLOAD_RCLONE_VERSION}-linux-__RCLONE_ARCH__.zip && \
     unzip rclone-${DOWNLOAD_RCLONE_VERSION}-linux-__RCLONE_ARCH__.zip && \
     mv rclone-*-linux-__RCLONE_ARCH__/rclone /usr/bin && \
@@ -21,8 +21,9 @@ RUN apk --update --no-cache add ca-certificates bash wget borgbackup && \
     mkdir -p p /app
 
 WORKDIR /app
-ADD *.sh ./
-RUN chmod +x *.sh
+ADD entrypoint.sh ./
+ADD backup.py ./
+RUN chmod +x entrypoint.sh && chmod +x backup.py
 
 VOLUME ["/data", "/backups"]
 ENTRYPOINT ["/app/entrypoint.sh"]
