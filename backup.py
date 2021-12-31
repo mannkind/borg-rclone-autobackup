@@ -11,7 +11,7 @@ BACKUP_PRUNE=os.environ.get("BACKUP_PRUNE")
 BACKUP_NOW=os.environ.get("BACKUP_NOW")
 BACKUP_EXCLUDES=os.environ.get("BACKUP_EXCLUDES")
 BACKUP_VERBOSE=os.environ.get("BACKUP_VERBOSE")
-BORG_CUSTOM_COMMANDS=ast.literal_eval(os.environ.get("BORG_CUSTOM_COMMANDS"))
+BORG_CUSTOM_ARGS=ast.literal_eval(os.environ.get("BORG_CUSTOM_ARGS"))
 EMAIL_HOST=os.environ.get("EMAIL_HOST")
 EMAIL_USER=os.environ.get("EMAIL_USER")
 EMAIL_PASS=os.environ.get("EMAIL_PASS")
@@ -19,33 +19,31 @@ EMAIL_USE_TLS=bool(os.environ.get("EMAIL_USE_TLS"))
 EMAIL_PORT=os.environ.get("EMAIL_PORT")
 EMAIL_FROM=os.environ.get("EMAIL_FROM")
 EMAIL_TO=os.environ.get("EMAIL_TO")
+EMAIL_TEST=bool(os.environ.get("EMAIL_TEST"))
 B2_ID=os.environ.get("B2_ID")
 B2_KEY=os.environ.get("B2_KEY")
-
-BORG_PASSPHRASE=BACKUP_ENCRYPTION_KEY
-BORG_HOST_ID=BACKUP_NAME
 BORG_REPO="/backups/"+BACKUP_NAME
 
 
-if BACKUP_VERBOSE:
-    logging.basicConfig(level=logging.DEBUG)
-else:
-    logging.basicConfig(level=logging.INFO)
-
-
 def sendEmail(message=str,subject_tag="success"):
-    email = f"""\
-    Subject: Backup alerts - {subject_tag}
-    To: {EMAIL_TO}
-    From: {EMAIL_FROM}
-        
-    {message}"""
+    email = f"Subject: Backup alerts - {subject_tag}\n\n{message}"
 
     try:
         #send your message with credentials specified above
-        with smtplib.SMTP(EMAIL_HOST, EMAIL_PORT) as server:
-            server.login(EMAIL_USER, EMAIL_PASS)
-            server.sendmail(EMAIL_FROM, EMAIL_TO, email)
+
+        if EMAIL_USE_TLS:
+            logging.debug("Using SMTP-TLS")
+            server = smtplib.SMTP(EMAIL_HOST,int(EMAIL_PORT))
+            server.starttls()
+            server.ehlo()
+        else:
+            logging.debug("Using SMTP-SSL")
+            server = smtplib.SMTP_SSL(EMAIL_HOST,int(EMAIL_PORT))
+            
+
+        server.login(EMAIL_USER, EMAIL_PASS)
+        server.sendmail(EMAIL_FROM, EMAIL_TO, email)
+        server.close()
 
         logging.debug("Email sent successfully")
     except (gaierror, ConnectionRefusedError):
@@ -54,6 +52,23 @@ def sendEmail(message=str,subject_tag="success"):
         logging.error('Error while sending email, check login credentials')
     except smtplib.SMTPException as e:
         logging.error('Error whiel sending email:  General SMTP error: ' + str(e))
+
+
+
+
+os.environ["BORG_PASSPHRASE"]=BACKUP_ENCRYPTION_KEY
+os.environ["BORG_HOST_ID"]=BACKUP_NAME
+os.environ["BORG_REPO"]=BORG_REPO
+
+if BACKUP_VERBOSE:
+    logging.basicConfig(level=logging.DEBUG)
+else:
+    logging.basicConfig(level=logging.INFO)
+
+if EMAIL_TEST:
+    logging.info("Sending test email")
+    sendEmail("Test email",subject_tag="TEST")
+    exit(0)
 
 
 logging.debug("Starting Borg Backup")
@@ -82,8 +97,8 @@ if not borg_pid.stdout:
 logging.debug("Starting Daily Archive")
 timestamp = strftime("%Y-%m-%d-%s", localtime())
 command = ['borg','create','::'+timestamp,'/data']
-if BORG_CUSTOM_COMMANDS:
-    command[2:0] = BORG_CUSTOM_COMMANDS
+if BORG_CUSTOM_ARGS:
+    command[2:0] = BORG_CUSTOM_ARGS
 
 logging.debug("Executing command: " + str(command))
 try:
