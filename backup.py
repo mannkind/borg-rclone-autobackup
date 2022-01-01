@@ -111,7 +111,9 @@ except subprocess.CalledProcessError as error:
 
 if BACKUP_PRUNE:
     logging.debug("Starting Prune")
-    command = ['borg','prune',BACKUP_PRUNE]
+    BACKUP_PRUNE=BACKUP_PRUNE.split()
+    command = ['borg','prune']
+    command+=BACKUP_PRUNE
     try:
         output = subprocess.run(command,shell=False,check=True,capture_output=True)
     except subprocess.CalledProcessError as error:
