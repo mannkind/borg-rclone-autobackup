@@ -20,6 +20,7 @@ EMAIL_PORT=os.environ.get("EMAIL_PORT")
 EMAIL_FROM=os.environ.get("EMAIL_FROM")
 EMAIL_TO=os.environ.get("EMAIL_TO")
 EMAIL_TEST=bool(os.environ.get("EMAIL_TEST"))
+EMAIL_ENABLED=bool(os.environ.get("EMAIL_ENABLED"))
 B2_ID=os.environ.get("B2_ID")
 B2_KEY=os.environ.get("B2_KEY")
 BORG_REPO="/backups/"+BACKUP_NAME
@@ -137,5 +138,6 @@ except subprocess.CalledProcessError as error:
       raise Exception("Error running command: " + error.stderr)
 logging.debug("Ending Rclone")
 logging.debug("Ending Backup")
-sendEmail("Backup was successful")
+if EMAIL_ENABLED:
+    sendEmail("Backup was successful")
 
