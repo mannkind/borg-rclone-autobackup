@@ -10,7 +10,7 @@ BACKUP_LOCATION=os.environ.get("BACKUP_LOCATION")
 BACKUP_PRUNE=os.environ.get("BACKUP_PRUNE")
 BACKUP_NOW=os.environ.get("BACKUP_NOW")
 BACKUP_VERBOSE=os.environ.get("BACKUP_VERBOSE")
-BORG_CUSTOM_ARGS=ast.literal_eval(os.environ.get("BORG_CUSTOM_ARGS"))
+BORG_CUSTOM_ARGS=os.environ.get("BORG_CUSTOM_ARGS")
 EMAIL_HOST=os.environ.get("EMAIL_HOST")
 EMAIL_USER=os.environ.get("EMAIL_USER")
 EMAIL_PASS=os.environ.get("EMAIL_PASS")
@@ -26,6 +26,7 @@ BORG_REPO="/backups/"+BACKUP_NAME
 
 
 def sendEmail(message=str,subject_tag="success"):
+    if not EMAIL_ENABLED: return
     email = f"Subject: Backup alerts - {subject_tag}\n\n{message}"
 
     try:
@@ -70,6 +71,12 @@ if EMAIL_TEST:
     sendEmail("Test email",subject_tag="TEST")
     exit(0)
 
+if BORG_CUSTOM_ARGS:
+    try:
+        BORG_CUSTOM_ARGS = ast.literal_eval(BORG_CUSTOM_ARGS)
+    except:
+        raise Exception("Error while evaluating the BORG_CUSTOM_ARGS env variable, ensure it is a valid python list")
+
 
 logging.debug("Starting Borg Backup")
 
@@ -83,8 +90,8 @@ if not os.path.isdir(BORG_REPO):
         output = subprocess.run(command, shell=False,capture_output=True, check=True)
     except subprocess.CalledProcessError as error:
         logging.fatal("There was a problem initializing the repository")
-        sendEmail("Error during repository initialization, borg said: " + error.stderr, subject_tag="ERROR_BORG")
-        raise Exception("Error running command: " + error.stderr)
+        sendEmail("Error during repository initialization, borg said: " + str(error.stderr), subject_tag="ERROR_BORG")
+        raise Exception("Error running command: " + str(error.stderr))
     logging.debug("Ending Repository Initialization")
 
 
@@ -105,8 +112,8 @@ try:
     output = subprocess.run(command,shell=False,check=True,capture_output=True)
 except subprocess.CalledProcessError as error:
     logging.fatal("There was a problem creating the daily archive")
-    sendEmail("Error during archive creation, borg said: " + error.stderr, subject_tag="ERROR_BORG")
-    raise Exception("Error running command: " + error.stderr)
+    sendEmail("Error during archive creation, borg said: " + str(error.stderr), subject_tag="ERROR_BORG")
+    raise Exception("Error running command: " + str(error.stderr))
 
 
 if BACKUP_PRUNE:
@@ -118,8 +125,8 @@ if BACKUP_PRUNE:
         output = subprocess.run(command,shell=False,check=True,capture_output=True)
     except subprocess.CalledProcessError as error:
       logging.warning("There was a problem pruning the daily archive")
-      sendEmail("Error during archive prune: " + error.stderr, subject_tag="ERROR_PRUNE")
-      raise Exception("Error running command: " + error.stderr)
+      sendEmail("Error during archive prune: " + str(error.stderr), subject_tag="ERROR_PRUNE")
+      raise Exception("Error running command: " + str(error.stderr))
     logging.debug("Ending Prune")
 
 
@@ -133,10 +140,9 @@ try:
     output = subprocess.run(command,shell=False,capture_output=True,check=True)
 except subprocess.CalledProcessError as error:
       logging.fatal("There was a problem syncing the backup")
-      sendEmail("Error during rclone sync, rclone said: " + error.stderr, subject_tag="ERROR_RCLONE")
-      raise Exception("Error running command: " + error.stderr)
+      sendEmail("Error during rclone sync, rclone said: " + str(error.stderr), subject_tag="ERROR_RCLONE")
+      raise Exception("Error running command: " + str(error.stderr))
 logging.debug("Ending Rclone")
 logging.debug("Ending Backup")
-if EMAIL_ENABLED:
-    sendEmail("Backup was successful")
+sendEmail("Backup was successful")
 
