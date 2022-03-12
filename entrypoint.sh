@@ -11,11 +11,11 @@ if [[ $GCS_PROJECT_NUMBER ]]; then
 fi
 
 # Schedule Backup
-echo "$BACKUP_SCHEDULE /app/backup.sh" > /var/spool/cron/crontabs/root
+echo "$BACKUP_SCHEDULE /app/backup.py" > /var/spool/cron/crontabs/root
 
 # Run backup immediately
 if [[ $BACKUP_NOW ]]; then
-    /app/backup.sh
+    /app/backup.py
 fi
 
 # Start Cron
