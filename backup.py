@@ -3,23 +3,26 @@ import os, logging, subprocess, ast, smtplib
 from time import strftime, localtime
 from socket import gaierror
 
+def envBool(env):
+    return (os.environ.get(env) or "").casefold() == 'true'
+
 BACKUP_NAME=os.environ.get("BACKUP_NAME")
 BACKUP_ENCRYPTION_KEY=os.environ.get("BACKUP_ENCRYPTION_KEY")
 BACKUP_SCHEDULE=os.environ.get("BACKUP_SCHEDULE")
 BACKUP_LOCATION=os.environ.get("BACKUP_LOCATION")
-BACKUP_PRUNE=os.environ.get("BACKUP_PRUNE")
-BACKUP_NOW=os.environ.get("BACKUP_NOW")
-BACKUP_VERBOSE=os.environ.get("BACKUP_VERBOSE")
+BACKUP_PRUNE=envBool("BACKUP_PRUNE")
+BACKUP_NOW=envBool("BACKUP_NOW")
+BACKUP_VERBOSE=envBool("BACKUP_VERBOSE")
 BORG_CUSTOM_ARGS=os.environ.get("BORG_CUSTOM_ARGS")
 EMAIL_HOST=os.environ.get("EMAIL_HOST")
 EMAIL_USER=os.environ.get("EMAIL_USER")
 EMAIL_PASS=os.environ.get("EMAIL_PASS")
-EMAIL_USE_TLS=bool(os.environ.get("EMAIL_USE_TLS"))
+EMAIL_USE_TLS=envBool("EMAIL_USE_TLS")
 EMAIL_PORT=os.environ.get("EMAIL_PORT")
 EMAIL_FROM=os.environ.get("EMAIL_FROM")
 EMAIL_TO=os.environ.get("EMAIL_TO")
-EMAIL_TEST=bool(os.environ.get("EMAIL_TEST"))
-EMAIL_ENABLED=bool(os.environ.get("EMAIL_ENABLED"))
+EMAIL_TEST=envBool("EMAIL_TEST")
+EMAIL_ENABLED=envBool("EMAIL_ENABLED")
 B2_ID=os.environ.get("B2_ID")
 B2_KEY=os.environ.get("B2_KEY")
 BORG_REPO="/backups/"+BACKUP_NAME
